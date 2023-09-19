@@ -1,0 +1,191 @@
+openapi: "3.0.0"
+
+info:
+  description: API for glady technical test
+  title: Glady Technical Test Api
+  version: '1.0.0'
+
+tags:
+  - name: User
+    description: User related endpoints
+  - name: Deposit
+    description: Deposit related endpoints
+
+paths:
+  /company/{companyId}/user/{userId}/deposit:
+    post:
+      tags:
+        - Deposit
+      operationId: distributeDepositToUser
+      summary: Perform deposit from company's balance to user's balance
+      parameters:
+        - $ref: '#/components/parameters/PathUserIdRequired'
+        - $ref: '#/components/parameters/PathCompanyIdRequired'
+      requestBody:
+        description: Required data to perform deposit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositInformation'
+      responses:
+        '204':
+          description: 'Deposit performed successfully'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /user/{userId}/balance:
+    get:
+      tags:
+        - User
+      operationId: getBalanceForUser
+      summary: Get the current balance of the given user
+      parameters:
+        - $ref: '#/components/parameters/PathUserIdRequired'
+      responses:
+        '200':
+          description: 'Current balance for the given user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBalance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+
+components:
+    schemas:
+
+      DepositInformation:
+        type: object
+        required:
+          - amount
+          - depositType
+        properties:
+          amount:
+            $ref: '#/components/schemas/Amount'
+          depositType:
+            $ref: '#/components/schemas/DepositType'
+
+      UserBalance:
+        type: object
+        required:
+          - userId
+          - amount
+          - currency
+        properties:
+          userId:
+            $ref: '#/components/schemas/UserId'
+          amount:
+            $ref: '#/components/schemas/Amount'
+          currency:
+            $ref: '#/components/schemas/Currency'
+
+      UserId:
+        type: integer
+        format: int64
+        description: Technical Id of the user
+        example: 12345
+
+      Amount:
+        type: number
+        description: Amount expressed as a decimal number of major currency units
+        format: decimal
+        example: 99.95
+
+      Currency:
+        type: string
+        description: 3 letter currency code as defined by ISO-4217
+        format: iso-4217
+        example: EUR
+
+      ErrorDetail:
+        type: object
+        required:
+          - detail
+          - message
+        properties:
+          detail:
+            type: string
+            description: label describing the error message
+            example: 'Format Error'
+          message:
+            type: string
+            description: Actual error message
+
+      DepositType:
+        type: string
+        enum:
+          - GIFT
+          - MEAL
+        description: Type of the deposit
+        example: GIFT
+
+      Int64:
+        format: int64
+        type: integer
+
+      GenericError:
+        type: object
+        required:
+          - errors
+        properties:
+          errors:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+
+    responses:
+      BadRequest:
+        description: 'Bad Request'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericError'
+
+      UserNotFound:
+        description: 'User not found'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericError'
+
+      ResourceNotFound:
+        description: 'Resource not found'
+        content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/GenericError'
+
+      InternalServerError:
+        description: 'Internal Server Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenericError'
+
+    parameters:
+      PathCompanyIdRequired:
+        description: Technical Id of the given company
+        example: 6789
+        in: path
+        name: companyId
+        required: true
+        schema:
+          $ref: '#/components/schemas/Int64'
+
+      PathUserIdRequired:
+        description: Technical Id of the given user
+        example: 12345
+        in: path
+        name: userId
+        required: true
+        schema:
+          $ref: '#/components/schemas/Int64'
