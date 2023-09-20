@@ -78,12 +78,15 @@ components:
         type: object
         required:
           - userId
-          - amount
+          - giftAmount
+          - mealAmount
           - currency
         properties:
           userId:
             $ref: '#/components/schemas/UserId'
-          amount:
+          giftAmount:
+            $ref: '#/components/schemas/Amount'
+          mealAmount:
             $ref: '#/components/schemas/Amount'
           currency:
             $ref: '#/components/schemas/Currency'

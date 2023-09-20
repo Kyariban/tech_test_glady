@@ -3,7 +3,6 @@ package com.glady.challenge.usecase.openapi.api;
 import com.glady.challenge.usecase.delegate.UserDelegate;
 import com.glady.challenge.usecase.openapi.model.UserBalance;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

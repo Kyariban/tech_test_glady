@@ -1,29 +1,23 @@
 package com.glady.challenge.usecase.delegate.error;
 
+import com.glady.challenge.usecase.exception.InsufficientBalanceException;
+import com.glady.challenge.usecase.exception.ResourceNotFoundException;
 import com.glady.challenge.usecase.openapi.model.ErrorDetail;
 import com.glady.challenge.usecase.openapi.model.GenericError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import javax.validation.ConstraintViolationException;
 import java.util.List;
 
 @Slf4j
@@ -42,21 +36,16 @@ public class ErrorHandler {
 
         for (ObjectError error : ex.getBindingResult().getGlobalErrors()) {
             if ("NotNull".equals(error.getCode())) {
-                // missing parameter
-
-                addErrorDetail(genericError, SocErrorEnum.SOC002, error.getObjectName());
+                addErrorDetail(genericError, "Missing parameter", error.getObjectName());
             } else {
-                // invalid parameter
-                addErrorDetail(genericError, SocErrorEnum.SOC003, error.getObjectName());
+                addErrorDetail(genericError, "Invalid parameter", error.getObjectName());
             }
         }
         for (FieldError fieldError : fieldErrors) {
             if ("NotNull".equals(fieldError.getCode())) {
-                // missing parameter
-                addErrorDetail(genericError, SocErrorEnum.SOC002, fieldError.getField());
+                addErrorDetail(genericError, "Missing parameter", fieldError.getField());
             } else {
-                // invalid parameter
-                addErrorDetail(genericError, SocErrorEnum.SOC003, fieldError.getField());
+                addErrorDetail(genericError, "Invalid parameter", fieldError.getField());
             }
         }
         return genericError;
@@ -67,35 +56,35 @@ public class ErrorHandler {
         ResponseEntity.BodyBuilder builder;
         GenericError genericError = new GenericError();
 
-        if (ex instanceof HttpMessageConversionException) {
+        if (ex instanceof ResourceNotFoundException resourceNotFoundException) {
+            builder = ResponseEntity.status(HttpStatus.NOT_FOUND);
+            handleResourceNotFoundException(resourceNotFoundException, genericError);
+        } else if (ex instanceof InsufficientBalanceException) {
             builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            processHttpMessageConvertionException((HttpMessageConversionException) ex, erreurGenerique);
-        } else if (ex instanceof MethodArgumentTypeMismatchException) {
-            builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC003, ((MethodArgumentTypeMismatchException) ex).getName());
-        } else if (ex instanceof MissingServletRequestParameterException) {
-            builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC002, ((MissingServletRequestParameterException) ex).getParameterName());
-        } else if (ex instanceof HttpRequestMethodNotSupportedException) {
-            builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC002, ((HttpRequestMethodNotSupportedException) ex).getMethod());
-        } else if (ex instanceof ConstraintViolationException) {
-            builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            processConstraintViolationException((ConstraintViolationException) ex, erreurGenerique);
-        } else if (ex instanceof DataIntegrityViolationException) {
-            builder = ResponseEntity.status(HttpStatus.BAD_REQUEST);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC003, ((DataIntegrityViolationException) ex).getMostSpecificCause().getMessage());
-        } else if (ex instanceof InsufficientAuthenticationException) {
-            log.error("Authorization error");
-            builder = ResponseEntity.status(HttpStatus.UNAUTHORIZED);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC006, "authorization header");
+            addErrorDetail(genericError, "Insufficient Balance Exception", ex.getMessage());
         } else {
-            log.error("Erreur interne", ex); // besoin de la loguer
+            log.error("Internal Server Error", ex);
             builder = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            addErrorDetail(erreurGenerique, SocErrorEnum.SOC001);
+            addErrorDetail(genericError, "Internal Server Error", ex.getMessage());
         }
         return builder.body(genericError);
     }
 
+    private void handleResourceNotFoundException(ResourceNotFoundException ex, GenericError genericError) {
+        Long resourceId = ex.getResourceId();
+        String resourceName = ex.getResourceName();
 
+        addErrorDetail(
+                genericError,
+                "Resource not found",
+                resourceName + " with id : " + resourceId + " not found"
+        );
+    }
+
+    private void addErrorDetail(GenericError genericError, String detail, String message) {
+        ErrorDetail errorDetail = new ErrorDetail()
+                .detail(detail)
+                .message(message);
+        genericError.addErrorsItem(errorDetail);
+    }
 }
