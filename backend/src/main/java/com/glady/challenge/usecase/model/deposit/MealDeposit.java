@@ -16,17 +16,16 @@ import java.util.Date;
 @NoArgsConstructor
 public class MealDeposit extends Deposit {
 
-    public MealDeposit(BigDecimal amount, Long companyId, User user) {
-        super(amount, companyId, user);
+    public MealDeposit(BigDecimal amount, Long companyId, User user, Date currentDate) {
+        super(amount, companyId, user, currentDate);
     }
 
     @Override
-    protected Date defineExpirationDate() {
-        return getNextYearLastDayOfFebruary();
+    protected Date defineExpirationDate(Date currentDate) {
+        return getNextYearLastDayOfFebruary(currentDate);
     }
 
-    private static Date getNextYearLastDayOfFebruary() {
-        Date currentDate = new Date();
+    private static Date getNextYearLastDayOfFebruary(Date currentDate) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);

@@ -7,7 +7,7 @@ import com.glady.challenge.usecase.exception.UserNotFoundException;
 import com.glady.challenge.usecase.model.Company;
 import com.glady.challenge.usecase.model.User;
 import com.glady.challenge.usecase.model.deposit.Deposit;
-import com.glady.challenge.usecase.model.deposit.DepositFactory;
+import com.glady.challenge.usecase.component.DepositFactory;
 import com.glady.challenge.usecase.openapi.model.DepositInformation;
 import com.glady.challenge.usecase.repository.CompanyRepository;
 import com.glady.challenge.usecase.repository.DepositRepository;
@@ -25,6 +25,7 @@ public class CompanyDelegate {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final DepositRepository depositRepository;
+    private final DepositFactory depositFactory;
 
     public void distributeDepositToUser(Long userId, Long companyId, DepositInformation depositInformation) {
 
@@ -76,7 +77,7 @@ public class CompanyDelegate {
     }
 
     private Deposit createDeposit(User user, Long companyId, DepositInformation depositInformation) {
-        return DepositFactory.makeDepositByType(depositInformation.getDepositType(),
+        return depositFactory.makeDepositByType(depositInformation.getDepositType(),
                 depositInformation.getAmount(),
                 companyId,
                 user);

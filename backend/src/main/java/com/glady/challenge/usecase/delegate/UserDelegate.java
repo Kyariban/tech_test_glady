@@ -29,7 +29,7 @@ public class UserDelegate {
                 .userId(userId)
                 .giftAmount(giftDepositBalance)
                 .mealAmount(mealDepositBalance)
-                .currency("USD");
+                .currency("USD"); // Absolute value for now, only for api output cleanliness
     }
 
     private User getUser(Long userId) {

@@ -27,11 +27,11 @@ public abstract class Deposit {
     private BigDecimal amount;
     private Date expirationDate;
 
-    protected Deposit(BigDecimal amount, Long companyId, User user) {
+    protected Deposit(BigDecimal amount, Long companyId, User user, Date date) {
         this.amount = amount;
         this.companyId = companyId;
         this.user = user;
-        this.expirationDate = defineExpirationDate();
+        this.expirationDate = defineExpirationDate(date);
     }
 
     protected Deposit() {
@@ -39,5 +39,5 @@ public abstract class Deposit {
     }
 
 
-    protected abstract Date defineExpirationDate();
+    protected abstract Date defineExpirationDate(Date date);
 }
