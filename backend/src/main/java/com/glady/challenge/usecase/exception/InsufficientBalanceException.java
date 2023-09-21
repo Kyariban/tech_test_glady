@@ -1,7 +1,7 @@
 package com.glady.challenge.usecase.exception;
 
-public class InsufficientBalanceException extends RuntimeException {
+public class InsufficientBalanceException extends SimpleMessageException {
     public InsufficientBalanceException(String message){
-        super(message);
+        super(message, "Insufficient Balance Exception");
     }
 }

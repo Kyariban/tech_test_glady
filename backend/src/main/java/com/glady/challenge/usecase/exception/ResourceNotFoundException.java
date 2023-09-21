@@ -1,5 +1,8 @@
 package com.glady.challenge.usecase.exception;
 
+import lombok.Getter;
+
+@Getter
 public class ResourceNotFoundException extends RuntimeException {
 
     private final String resourceName;
@@ -9,13 +12,4 @@ public class ResourceNotFoundException extends RuntimeException {
         this.resourceName = resourceName;
         this.resourceId = resourceId;
     }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
 }

@@ -16,22 +16,26 @@ import java.util.Date;
 public abstract class Deposit {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long depositId;
 
     @ManyToOne
     @JoinColumn(name = "userId", nullable = false)
-    private final User user;
+    private User user;
 
-    private final Long companyId;
-    private final BigDecimal amount;
-    private final Date expirationDate;
+    private Long companyId;
+    private BigDecimal amount;
+    private Date expirationDate;
 
     protected Deposit(BigDecimal amount, Long companyId, User user) {
         this.amount = amount;
         this.companyId = companyId;
         this.user = user;
         this.expirationDate = defineExpirationDate();
+    }
+
+    protected Deposit() {
+
     }
 
 
