@@ -1,9 +1,6 @@
 package com.glady.challenge.usecase.delegate;
 
-import com.glady.challenge.usecase.exception.CompanyNotFoundException;
-import com.glady.challenge.usecase.exception.CompanyUserMismatchException;
-import com.glady.challenge.usecase.exception.InsufficientBalanceException;
-import com.glady.challenge.usecase.exception.UserNotFoundException;
+import com.glady.challenge.usecase.exception.*;
 import com.glady.challenge.usecase.model.Company;
 import com.glady.challenge.usecase.model.User;
 import com.glady.challenge.usecase.model.deposit.Deposit;
@@ -28,6 +25,7 @@ public class CompanyDelegate {
     private final DepositFactory depositFactory;
 
     public void distributeDepositToUser(Long userId, Long companyId, DepositInformation depositInformation) {
+        checkMissingBodyParam(depositInformation);
 
         Company company = getCompany(companyId);
         User user = getUser(userId);
@@ -36,6 +34,16 @@ public class CompanyDelegate {
         checkCompanyHasSufficientBalance(depositInformation, company);
         Deposit deposit = performDepositToUser(companyId, depositInformation, user);
         updateCompanyBalance(company, deposit);
+    }
+
+    private static void checkMissingBodyParam(DepositInformation depositInformation) {
+        if(depositInformation.getAmount() == null)  {
+            throw new MissingBodyParameterException("Missing parameter amount");
+        }
+
+        if(depositInformation.getDepositType() == null) {
+            throw new MissingBodyParameterException("Missing parameter depositType");
+        }
     }
 
 

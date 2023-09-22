@@ -22,6 +22,7 @@ paths:
         - $ref: '#/components/parameters/PathUserIdRequired'
         - $ref: '#/components/parameters/PathCompanyIdRequired'
       requestBody:
+        required: true
         description: Required data to perform deposit
         content:
           application/json:
@@ -100,7 +101,6 @@ components:
       Amount:
         type: number
         description: Amount expressed as a decimal number of major currency units
-        format: decimal
         example: 99.95
 
       Currency:

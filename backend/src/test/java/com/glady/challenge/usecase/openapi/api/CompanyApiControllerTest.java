@@ -2,10 +2,7 @@ package com.glady.challenge.usecase.openapi.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.glady.challenge.usecase.delegate.CompanyDelegate;
-import com.glady.challenge.usecase.exception.CompanyNotFoundException;
-import com.glady.challenge.usecase.exception.CompanyUserMismatchException;
-import com.glady.challenge.usecase.exception.InsufficientBalanceException;
-import com.glady.challenge.usecase.exception.UserNotFoundException;
+import com.glady.challenge.usecase.exception.*;
 import com.glady.challenge.usecase.model.Company;
 import com.glady.challenge.usecase.model.User;
 import com.glady.challenge.usecase.openapi.model.DepositInformation;
@@ -46,6 +43,14 @@ class CompanyApiControllerTest extends TestUtilParent {
         User user = getTestUserMat();
         Company company = getWealthyCompany();
         performPostAndExpectNoContent(company, user);
+    }
+
+    @Test
+    void performDepositWithMissingAmount() throws Exception {
+        User user = getTestUserMat();
+        Company company = getWealthyCompany();
+        mockExceptionWhenCallingDelegate(doThrow(new MissingBodyParameterException("Missing amount param")));
+        performPostAndExceptBadRequest(company, user);
     }
 
     @Test
@@ -91,6 +96,21 @@ class CompanyApiControllerTest extends TestUtilParent {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(asJsonString(getDepositInformation(DepositType.MEAL))))
                 .andExpect(status().isNoContent());
+    }
+
+    private void performPostAndExceptBadRequest(Company company, User user) throws Exception {
+        ResultActions resultActions = this.mockMvc
+                .perform(
+                        post("/api/company/{companyId}/user/{userId}/deposit", company.getCompanyId(), user.getUserId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(getDepositInformation(DepositType.MEAL))))
+                .andExpect(status().isBadRequest());
+
+        resultActions.andExpect(jsonPath("$.errors[0].detail").value("Missing body parameter"))
+                .andExpect(
+                        jsonPath("$.errors[0].message")
+                                .value("Missing amount param")
+                );
     }
 
     private void mockExceptionWhenCallingDelegate(Stubber stubber) {
